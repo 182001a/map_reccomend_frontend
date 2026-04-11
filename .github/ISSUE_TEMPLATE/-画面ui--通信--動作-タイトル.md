@@ -1,5 +1,5 @@
 ---
-name: タイトル
+name: "[画面UI][通信][動作]タイトル"
 about: 機能追加　概要
 title: ''
 labels: ''
