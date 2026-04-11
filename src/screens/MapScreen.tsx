@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import * as Location from 'expo-location';
 
-import { UI_MESSAGES } from '../constants/locationMessage';
+import { UI_MESSAGES } from '../constants/locationMessages';
 
 // 現在地取得の状態管理
 type LocationState = {
@@ -22,8 +22,8 @@ export default function MapScreen() {
 
 	// 緯度経度からRegionオブジェクトを作成する関数
 	function createRegionFromCoordinates(
-			latitude: number,
-			longitude: number
+		latitude: number,
+		longitude: number
 	): Region {
 		return {
 			latitude,
@@ -42,15 +42,20 @@ export default function MapScreen() {
 	// コンポーネントのマウント時に現在地を取得する
 	useEffect(() => {
 		let isMounted = true; // コンポーネントがマウントされているかのフラグ
-		
+
+		// 安全に状態を更新するための関数
+		const safeSetState = (state: LocationState): void => {
+			if (!isMounted) {
+				return;
+			}
+			setLocationState(state);
+		};
+
 		const fetchCurrentLocation = async (): Promise<void> => {
 			try {
 				const permissionStatus = await requestLocationPermission();
 				if (permissionStatus !== Location.PermissionStatus.GRANTED) {
-					if (!isMounted) {
-						return;
-					}
-					setLocationState({
+					safeSetState({
 						region: null,
 						isLoading: false,
 						errorMsg: UI_MESSAGES.PERMISSION_DENIED,
@@ -62,19 +67,13 @@ export default function MapScreen() {
 					currentPosition.coords.latitude,
 					currentPosition.coords.longitude,
 				);
-			if (!isMounted) {
-				return;
-			}
-			setLocationState({
+			safeSetState({
 				region: currentRegion,
 				isLoading: false,
 				errorMsg: null,
 			});
 		} catch (error) {
-			if (!isMounted) {
-				return;
-			}
-			setLocationState({
+			safeSetState({
 				region: null,
 				isLoading: false,
 				errorMsg: UI_MESSAGES.FETCH_FAILED,
