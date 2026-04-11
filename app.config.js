@@ -16,11 +16,17 @@ export default {
     },
     ios: {
       supportsTablet: true,
+      infoPlist: {
+        NSAppTransportSecurity: {
+          NSAllowsArbitraryLoads: true
+        }
+      },
       config: {
         googleMapsApiKey: process.env.GOOGLE_MAP_API_KEY
       }
     },
     android: {
+      usesCleartextTraffic: true,
       config: {
         googleMaps: {
           apiKey: process.env.GOOGLE_MAP_API_KEY
