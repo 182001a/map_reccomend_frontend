@@ -6,16 +6,26 @@ export const UI_MESSAGES = {
   CURRENT_LOCATION: '現在地',
 
   LOGIN: 'ログイン',
+  REGISTER: '新規登録',
   LOGOUT: 'ログアウト',
   LOGIN_SUCCESS: 'ログインしました',
+  REGISTER_SUCCESS: '登録が完了しました',
   LOGOUT_SUCCESS: 'ログアウトしました',
   CHECKING_LOGIN_STATUS: 'ログイン状態を確認しています...',
   LOGIN_FAILED: 'ログインに失敗しました',
+  REGISTER_FAILED: 'ユーザー登録に失敗しました',
 
   EMPTY_CREDENTIALS: 'ユーザー名とパスワードを入力してください',
+  EMPTY_REGISTRATION_FIELDS: 'ユーザー名、メールアドレス、パスワードを入力してください',
   RESTORE_FAILED: '保存されたログイン情報を復元できませんでした',
-
   PROFILE_FETCH_FAILED: 'プロフィールの取得に失敗しました',
-
   MAP_AUTH_REQUIRED: '地図機能を使うには認証が必要です',
+  REGISTER_DESCRIPTION: '新しいアカウントを作成して地図機能を利用できます',
+  LOGIN_DESCRIPTION: '登録済みアカウントでログインして地図機能を利用します',
+  GO_TO_REGISTER: 'アカウントを作成する',
+  GO_TO_LOGIN: 'ログインに戻る',
+  INVALID_EMAIL: 'メールアドレスの形式を確認してください',
+  INVALID_PASSWORD_LENGTH: 'パスワードは8文字以上64文字以下で入力してください',
+  INVALID_USERNAME_LENGTH: 'ユーザー名は3文字以上20文字以下で入力してください',
+  INVALID_USERNAME_FORMAT: 'ユーザー名は半角英数字とアンダースコアのみ使用できます',
 } as const;
