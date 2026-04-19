@@ -13,21 +13,34 @@ import {
 import * as SecureStore from 'expo-secure-store';
 
 import MapScreen from './src/screens/MapScreen';
-import { getProfile, login, User } from './src/api/auth';
+import { getProfile, login, register, User } from './src/api/auth';
 import { UI_MESSAGES } from './src/constants/locationMessages';
 
 const AUTH_TOKEN_STORAGE_KEY = 'auth_token';
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const USERNAME_REGEX = /^[A-Za-z0-9_]+$/;
+const USERNAME_MIN_LENGTH = 3;
+const USERNAME_MAX_LENGTH = 20;
+const PASSWORD_MIN_LENGTH = 8;
+const PASSWORD_MAX_LENGTH = 64;
 
+// 認証状態の型定義
 type AuthState = {
-  user: User | null;
-  token: string | null;
-  isInitializing: boolean;
-  isSubmitting: boolean;
-  errorMessage: string | null;
+  user: User | null;						// ログインしているユーザーの情報
+  token: string | null;					// 認証トークン		
+  isInitializing: boolean;			// アプリ起動時にセッションを復元中かどうか
+  isSubmitting: boolean;				// ログインや登録のリクエストを送信中かどうか
+  errorMessage: string | null;	// エラーメッセージ（バリデーションエラーやAPIエラーなど）
 };
 
+// 認証モードの型定義
+type AuthMode = 'login' | 'register';
+
+// アプリのメインコンポーネント
 export default function App() {
+  const [authMode, setAuthMode] = useState<AuthMode>('login');
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [authState, setAuthState] = useState<AuthState>({
     user: null,
@@ -41,11 +54,13 @@ export default function App() {
     void restoreSession();
   }, []);
 
+  // セッションの復元
   async function restoreSession(): Promise<void> {
     try {
       const storedToken = await SecureStore.getItemAsync(AUTH_TOKEN_STORAGE_KEY);
 
       if (!storedToken) {
+				// トークンが保存されていない場合は初期化
         setAuthState((currentState) => ({
           ...currentState,
           isInitializing: false,
@@ -53,6 +68,7 @@ export default function App() {
         return;
       }
 
+			// トークンが保存されている場合はプロフィールを取得してセッションを復元
       const user = await getProfile(storedToken);
       setAuthState({
         user,
@@ -73,13 +89,57 @@ export default function App() {
     }
   }
 
+	// 認証フォームのバリデーション
+	// エラーメッセージを返す
+  function validateAuthForm(currentMode: AuthMode): string | null {
+    const trimmedUsername = username.trim();
+    const trimmedEmail = email.trim();
+
+    if (currentMode === 'login') {
+      if (!trimmedUsername || !password) {
+        return UI_MESSAGES.EMPTY_CREDENTIALS;
+      }
+      return null;
+    }
+
+    if (!trimmedUsername || !trimmedEmail || !password) {
+      return UI_MESSAGES.EMPTY_REGISTRATION_FIELDS;
+    }
+
+    if (
+      trimmedUsername.length < USERNAME_MIN_LENGTH ||
+      trimmedUsername.length > USERNAME_MAX_LENGTH
+    ) {
+      return UI_MESSAGES.INVALID_USERNAME_LENGTH;
+    }
+
+    if (!USERNAME_REGEX.test(trimmedUsername)) {
+      return UI_MESSAGES.INVALID_USERNAME_FORMAT;
+    }
+
+    if (!EMAIL_REGEX.test(trimmedEmail)) {
+      return UI_MESSAGES.INVALID_EMAIL;
+    }
+
+    if (
+      password.length < PASSWORD_MIN_LENGTH ||
+      password.length > PASSWORD_MAX_LENGTH
+    ) {
+      return UI_MESSAGES.INVALID_PASSWORD_LENGTH;
+    }
+
+    return null;
+  }
+
+  // ログイン処理
   async function handleLogin(): Promise<void> {
     const trimmedUsername = username.trim();
+    const validationError = validateAuthForm('login');
 
-    if (!trimmedUsername || !password) {
+    if (validationError) {
       setAuthState((currentState) => ({
         ...currentState,
-        errorMessage: UI_MESSAGES.EMPTY_CREDENTIALS,
+        errorMessage: validationError,
       }));
       return;
     }
@@ -111,6 +171,49 @@ export default function App() {
     }
   }
 
+	// ユーザー登録処理
+  async function handleRegister(): Promise<void> {
+    const trimmedUsername = username.trim();
+    const trimmedEmail = email.trim();
+    const validationError = validateAuthForm('register');
+
+    if (validationError) {
+      setAuthState((currentState) => ({
+        ...currentState,
+        errorMessage: validationError,
+      }));
+      return;
+    }
+
+    try {
+      setAuthState((currentState) => ({
+        ...currentState,
+        isSubmitting: true,
+        errorMessage: null,
+      }));
+
+      await register(trimmedUsername, trimmedEmail, password);
+      setAuthState((currentState) => ({
+        ...currentState,
+        isSubmitting: false,
+        errorMessage: null,
+      }));
+      setAuthMode('login');
+      setUsername(trimmedUsername);
+      setEmail('');
+      setPassword('');
+      Alert.alert(UI_MESSAGES.REGISTER_SUCCESS);
+    } catch (error) {
+      setAuthState((currentState) => ({
+        ...currentState,
+        isSubmitting: false,
+        errorMessage:
+          error instanceof Error ? error.message : UI_MESSAGES.REGISTER_FAILED,
+      }));
+    }
+  }
+
+  // ログアウト処理
   async function handleLogout(): Promise<void> {
     await SecureStore.deleteItemAsync(AUTH_TOKEN_STORAGE_KEY);
     setAuthState({
@@ -121,8 +224,20 @@ export default function App() {
       errorMessage: null,
     });
     setUsername('');
+    setEmail('');
     setPassword('');
     Alert.alert(UI_MESSAGES.LOGOUT_SUCCESS);
+  }
+
+  function switchAuthMode(nextMode: AuthMode): void {
+    setAuthMode(nextMode);
+    setEmail('');
+    setPassword('');
+    setAuthState((currentState) => ({
+      ...currentState,
+      errorMessage: null,
+      isSubmitting: false,
+    }));
   }
 
   if (authState.isInitializing) {
@@ -134,6 +249,9 @@ export default function App() {
     );
   }
 
+  /* ==================== UIレンダリング ==================== */
+
+  // ログインしていない場合は認証フォームを表示
   if (!authState.user || !authState.token) {
     return (
       <KeyboardAvoidingView
@@ -141,9 +259,13 @@ export default function App() {
         style={styles.authContainer}
       >
         <View style={styles.card}>
-          <Text style={styles.title}>{UI_MESSAGES.LOGIN}</Text>
+          <Text style={styles.title}>
+            {authMode === 'login' ? UI_MESSAGES.LOGIN : UI_MESSAGES.REGISTER}
+          </Text>
           <Text style={styles.description}>
-            {UI_MESSAGES.MAP_AUTH_REQUIRED}
+            {authMode === 'login'
+              ? UI_MESSAGES.LOGIN_DESCRIPTION
+              : UI_MESSAGES.REGISTER_DESCRIPTION}
           </Text>
 
           <TextInput
@@ -154,6 +276,17 @@ export default function App() {
             style={styles.input}
             value={username}
           />
+          {authMode === 'register' ? (
+            <TextInput
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="email-address"
+              onChangeText={setEmail}
+              placeholder="メールアドレス"
+              style={styles.input}
+              value={email}
+            />
+          ) : null}
           <TextInput
             autoCapitalize="none"
             autoCorrect={false}
@@ -170,7 +303,9 @@ export default function App() {
 
           <Pressable
             disabled={authState.isSubmitting}
-            onPress={() => void handleLogin()}
+            onPress={() =>
+              void (authMode === 'login' ? handleLogin() : handleRegister())
+            }
             style={[
               styles.primaryButton,
               authState.isSubmitting && styles.buttonDisabled,
@@ -179,14 +314,31 @@ export default function App() {
             {authState.isSubmitting ? (
               <ActivityIndicator color="#ffffff" />
             ) : (
-              <Text style={styles.primaryButtonText}>{UI_MESSAGES.LOGIN}</Text>
+              <Text style={styles.primaryButtonText}>
+                {authMode === 'login' ? UI_MESSAGES.LOGIN : UI_MESSAGES.REGISTER}
+              </Text>
             )}
+          </Pressable>
+
+          <Pressable
+            disabled={authState.isSubmitting}
+            onPress={() =>
+              switchAuthMode(authMode === 'login' ? 'register' : 'login')
+            }
+            style={styles.textButton}
+          >
+            <Text style={styles.textButtonText}>
+              {authMode === 'login'
+                ? UI_MESSAGES.GO_TO_REGISTER
+                : UI_MESSAGES.GO_TO_LOGIN}
+            </Text>
           </Pressable>
         </View>
       </KeyboardAvoidingView>
     );
   }
 
+  // ログインしている場合は地図画面を表示
   return (
     <View style={styles.appContainer}>
       <View style={styles.header}>
@@ -298,6 +450,16 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 14,
     color: '#5b6473',
+  },
+  textButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 4,
+  },
+  textButtonText: {
+    color: '#1f6feb',
+    fontSize: 14,
+    fontWeight: '600',
   },
   subText: {
     fontSize: 13,
