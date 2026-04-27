@@ -1,9 +1,10 @@
-import { StyleSheet, View, Text } from 'react-native';
-import { useState, useEffect } from 'react';
-import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
-import * as Location from 'expo-location';
+import { ActivityIndicator, Alert, Pressable, StyleSheet, View, Text } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import type { Region } from 'react-native-maps';
 
 import { UI_MESSAGES } from '../constants/locationMessages';
+import { getCurrentRegion, getLocationErrorMessage } from '../utils/location';
 
 // 現在地取得の状態管理
 type LocationState = {
@@ -13,25 +14,11 @@ type LocationState = {
 };
 
 export default function MapScreen() {
-
-	// 位置情報の権限をリクエストする関数
-	async function requestLocationPermission(): Promise<Location.PermissionStatus> {
-		const permissionResponse = await Location.requestForegroundPermissionsAsync();
-		return permissionResponse.status;
-	}
-
-	// 緯度経度からRegionオブジェクトを作成する関数
-	function createRegionFromCoordinates(
-		latitude: number,
-		longitude: number
-	): Region {
-		return {
-			latitude,
-			longitude,
-			latitudeDelta: 0.01,
-			longitudeDelta: 0.01,
-		};
-	}
+	// @note useRef
+	// 再レンダリングの影響を受けずに値を保持するために使用
+	// MapViewの参照を保持してMapViewのメソッドを呼び出す
+	const mapRef = useRef<MapView | null>(null);
+	const [isLocatingCurrentPosition, setIsLocatingCurrentPosition] = useState(false);
 
 	// 位置情報の状態を管理
 	const [locationState, setLocationState] = useState<LocationState>({
@@ -39,6 +26,27 @@ export default function MapScreen() {
 		isLoading: true,
 		errorMsg: null,
 	});
+
+	// ボタン押下時に現在地を再取得してマップの中心を移動する
+	async function moveToCurrentLocation(): Promise<void> {
+		try {
+			setIsLocatingCurrentPosition(true);
+			const currentRegion = await getCurrentRegion();
+			setLocationState({
+				region: currentRegion,
+				isLoading: false,
+				errorMsg: null,
+			});
+			// @note mapRef.current?.animateToRegion
+			// mapRef.currentが存在する場合にanimateToRegionを呼び出す（条件分岐を省略した記法）
+			mapRef.current?.animateToRegion(currentRegion, 500);
+		} catch (error) {
+			Alert.alert(getLocationErrorMessage(error));
+		} finally {
+			setIsLocatingCurrentPosition(false);
+		}
+	}
+
 	// コンポーネントのマウント時に現在地を取得する
 	useEffect(() => {
 		let isMounted = true; // コンポーネントがマウントされているかのフラグ
@@ -53,34 +61,24 @@ export default function MapScreen() {
 
 		const fetchCurrentLocation = async (): Promise<void> => {
 			try {
-				const permissionStatus = await requestLocationPermission();
-				if (permissionStatus !== Location.PermissionStatus.GRANTED) {
-					safeSetState({
-						region: null,
-						isLoading: false,
-						errorMsg: UI_MESSAGES.PERMISSION_DENIED,
-					});
-					return;
-				}
-				const currentPosition = await Location.getCurrentPositionAsync({});
-				const currentRegion = createRegionFromCoordinates(
-					currentPosition.coords.latitude,
-					currentPosition.coords.longitude,
-				);
-			safeSetState({
-				region: currentRegion,
-				isLoading: false,
-				errorMsg: null,
-			});
-		} catch (error) {
-			safeSetState({
-				region: null,
-				isLoading: false,
-				errorMsg: UI_MESSAGES.FETCH_FAILED,
-			});
-		}
-	};
+				const currentRegion = await getCurrentRegion();
+				safeSetState({
+					region: currentRegion,
+					isLoading: false,
+					errorMsg: null,
+				});
+			} catch (error) {
+				safeSetState({
+					region: null,
+					isLoading: false,
+					errorMsg: getLocationErrorMessage(error),
+				});
+			}
+		};
+
 		fetchCurrentLocation();
+		// クリーンアップ関数でマウントフラグを更新
+		// MapScreenがアンマウントされた後に非同期処理が完了しても状態を更新しないようにするため
 		return () => {
 			isMounted = false;
 		};
@@ -112,13 +110,39 @@ export default function MapScreen() {
 	}
 	// 現在地が取得できた場合
 	return (
-		<MapView
-			style={{ flex: 1 }}
-			provider={PROVIDER_GOOGLE}
-			region={locationState.region}
-		>
-			<Marker coordinate={locationState.region} title={UI_MESSAGES.CURRENT_LOCATION} />
-		</MapView>
+		<View style={styles.mapWrapper}>
+			<MapView
+				ref={mapRef}
+				style={styles.map}
+				provider={PROVIDER_GOOGLE}
+				region={locationState.region}
+			>
+				<Marker coordinate={locationState.region} title={UI_MESSAGES.CURRENT_LOCATION} />
+			</MapView>
+			<Pressable
+				accessibilityLabel={UI_MESSAGES.MOVE_TO_CURRENT_LOCATION}
+				disabled={isLocatingCurrentPosition}
+				onPress={() => void moveToCurrentLocation()}
+				style={[
+					styles.currentLocationButton,
+					isLocatingCurrentPosition && styles.currentLocationButtonDisabled,
+				]}
+			>
+				{isLocatingCurrentPosition ? (
+					<ActivityIndicator color="#1f6feb" />
+				) : (
+					// 現在地アイコン（中心の点と4方向の線を組み合わせたデザイン）
+					<View style={styles.currentLocationIcon}>
+						<View style={styles.currentLocationRing} />
+						<View style={styles.currentLocationDot} />
+						<View style={[styles.currentLocationLine, styles.currentLocationLineTop]} />
+						<View style={[styles.currentLocationLine, styles.currentLocationLineRight]} />
+						<View style={[styles.currentLocationLine, styles.currentLocationLineBottom]} />
+						<View style={[styles.currentLocationLine, styles.currentLocationLineLeft]} />
+					</View>
+				)}
+			</Pressable>
+		</View>
 	);
 }
 
@@ -127,5 +151,79 @@ const styles = StyleSheet.create({
 		flex: 1,
 		justifyContent: 'center',
 		alignItems: 'center',
+	},
+	currentLocationButton: {
+		position: 'absolute',
+		right: 16,
+		bottom: 24,
+		width: 52,
+		height: 52,
+		borderRadius: 26,
+		backgroundColor: '#ffffff',
+		alignItems: 'center',
+		justifyContent: 'center',
+		shadowColor: '#000000',
+		shadowOffset: {
+			width: 0,
+			height: 4,
+		},
+		shadowOpacity: 0.18,
+		shadowRadius: 8,
+		elevation: 6,
+	},
+	currentLocationButtonDisabled: {
+		opacity: 0.8,
+	},
+	currentLocationDot: {
+		position: 'absolute',
+		width: 5,
+		height: 5,
+		borderRadius: 2.5,
+		backgroundColor: '#0f1f3a',
+	},
+	currentLocationIcon: {
+		width: 32,
+		height: 32,
+		alignItems: 'center',
+		justifyContent: 'center',
+	},
+	currentLocationLine: {
+		position: 'absolute',
+		backgroundColor: '#0f1f3a',
+		borderRadius: 1.5,
+	},
+	currentLocationLineBottom: {
+		width: 3,
+		height: 8,
+		bottom: 0,
+	},
+	currentLocationLineLeft: {
+		width: 8,
+		height: 3,
+		left: 0,
+	},
+	currentLocationLineRight: {
+		width: 8,
+		height: 3,
+		right: 0,
+	},
+	currentLocationLineTop: {
+		width: 3,
+		height: 8,
+		top: 0,
+	},
+	currentLocationRing: {
+		position: 'absolute',
+		width: 20,
+		height: 20,
+		borderRadius: 10,
+		borderWidth: 3,
+		borderColor: '#0f1f3a',
+	},
+	map: {
+		flex: 1,
+	},
+	mapWrapper: {
+		flex: 1,
 	},
 });

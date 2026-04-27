@@ -4,6 +4,7 @@ export const UI_MESSAGES = {
   LOADING: '現在地を取得しています...',
   NO_LOCATION: '現在地の情報がありません',
   CURRENT_LOCATION: '現在地',
+  MOVE_TO_CURRENT_LOCATION: '現在地へ移動',
 
   LOGIN: 'ログイン',
   REGISTER: '新規登録',
