@@ -25,6 +25,7 @@ export type LoginResponse = {
 const AUTH_ENDPOINTS = {
 	login: '/auth/login/',
 	profile: '/auth/me/',
+	register: '/auth/register/',
 } as const;
 
 // ヘッダーの作成
@@ -32,6 +33,29 @@ function createTokenHeaders(token: string) {
 	return {
 		Authorization: `Token ${token}`,
 	};
+}
+
+// ユーザー登録の実行
+export async function register(
+	username: string,
+	email: string,
+	password: string
+): Promise<LoginResponse> {
+	try {
+		// APIリクエストの実行
+		// 登録に成功した場合、ユーザーとトークンを含むレスポンスが返されることを想定
+		const response = await apiClient.post<LoginResponse>(
+			AUTH_ENDPOINTS.register,
+			{
+				username,
+				email,
+				password
+			}
+		);
+		return response.data;
+	} catch (error: unknown) {
+		throw new Error(extractApiErrorMessage(error, UI_MESSAGES.REGISTER_FAILED));
+	}
 }
 
 // ログインリクエストの実行
