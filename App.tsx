@@ -14,6 +14,7 @@ import * as SecureStore from 'expo-secure-store';
 
 import MapScreen from './src/screens/MapScreen';
 import { getProfile, login, register, User } from './src/api/auth';
+import { ApiRequestError } from './src/api/errors';
 import { UI_MESSAGES } from './src/constants/locationMessages';
 
 const AUTH_TOKEN_STORAGE_KEY = 'auth_token';
@@ -77,14 +78,24 @@ export default function App() {
         isSubmitting: false,
         errorMessage: null,
       });
-    } catch {
-      await SecureStore.deleteItemAsync(AUTH_TOKEN_STORAGE_KEY);
+    } catch (error) {
+      const isInvalidToken =
+        error instanceof ApiRequestError &&
+        (error.status === 401 || error.status === 403)
+      ;
+
+      if (isInvalidToken) {
+        await SecureStore.deleteItemAsync(AUTH_TOKEN_STORAGE_KEY);
+      }
+
       setAuthState({
         user: null,
         token: null,
         isInitializing: false,
         isSubmitting: false,
-        errorMessage: UI_MESSAGES.PROFILE_FETCH_FAILED,
+        errorMessage: isInvalidToken
+          ? UI_MESSAGES.PROFILE_FETCH_FAILED
+          : UI_MESSAGES.RESTORE_FAILED,
       });
     }
   }

@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import { extractApiErrorMessage } from './errors';
+import { createApiRequestError } from './errors';
 import { UI_MESSAGES } from '../constants/locationMessages';
 
 // ユーザーデータの型定義
@@ -54,7 +54,7 @@ export async function register(
 		);
 		return response.data;
 	} catch (error: unknown) {
-		throw new Error(extractApiErrorMessage(error, UI_MESSAGES.REGISTER_FAILED));
+		throw createApiRequestError(error, UI_MESSAGES.REGISTER_FAILED);
 	}
 }
 
@@ -80,7 +80,7 @@ export async function login(
       password,
     });
   } catch (error: unknown) {
-    throw new Error(extractApiErrorMessage(error, UI_MESSAGES.LOGIN_FAILED));
+    throw createApiRequestError(error, UI_MESSAGES.LOGIN_FAILED);
   }
 }
 
@@ -94,8 +94,6 @@ export async function getProfile(token: string): Promise<User> {
 
 		return response.data;
 	} catch (error: unknown) {
-		throw new Error(
-			extractApiErrorMessage(error, UI_MESSAGES.PROFILE_FETCH_FAILED)
-		);
+		throw createApiRequestError(error, UI_MESSAGES.PROFILE_FETCH_FAILED);
 	}
 }

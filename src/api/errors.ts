@@ -6,6 +6,17 @@ type ApiErrorResponse = {
 	[key: string]: string | string[] | undefined;
 };
 
+// APIリクエストエラーを表すカスタムエラークラス
+export class ApiRequestError extends Error {
+	readonly status: number | null;
+
+	constructor(message: string, status: number | null) {
+		super(message);
+		this.name = 'ApiRequestError';
+		this.status = status;
+	}
+}
+
 // エラーメッセージの正規化関数
 function normalizeErrorEntry(value: string | string[] | undefined): string | null {
 	if (Array.isArray(value)) {
@@ -57,4 +68,13 @@ export function extractApiErrorMessage(
 	}
 
 	return fallbackMessage;
+}
+
+// APIリクエストエラーを作成するユーティリティ関数
+export function createApiRequestError(
+	error: unknown,
+	fallbackMessage: string
+): ApiRequestError {
+	const status = axios.isAxiosError(error) ? error.response?.status ?? null : null;
+	return new ApiRequestError(extractApiErrorMessage(error, fallbackMessage), status);
 }
