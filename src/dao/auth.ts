@@ -1,25 +1,7 @@
 import { apiClient } from './client';
 import { createApiRequestError } from './errors';
 import { UI_MESSAGES } from '../constants/locationMessages';
-
-// ユーザーデータの型定義
-export type User = {
-	id: number;
-	username: string;
-	email: string;
-};
-
-// ログイン情報
-export type LoginCredentials = {
-	username: string;
-	password: string;
-};
-
-// ログインレスポンスの型定義
-export type LoginResponse = {
-	user: User;
-	token: string;
-};
+import type { LoginCredentials, LoginResponse, User } from '../types/auth';
 
 // エンドポイントの定義
 const AUTH_ENDPOINTS = {
@@ -49,7 +31,7 @@ export async function register(
 			{
 				username,
 				email,
-				password
+				password,
 			}
 		);
 		return response.data;
@@ -71,17 +53,17 @@ async function executeLoginRequest(
 }
 
 export async function login(
-  username: string,
-  password: string
+	username: string,
+	password: string
 ): Promise<LoginResponse> {
-  try {
-    return await executeLoginRequest({
-      username,
-      password,
-    });
-  } catch (error: unknown) {
-    throw createApiRequestError(error, UI_MESSAGES.LOGIN_FAILED);
-  }
+	try {
+		return await executeLoginRequest({
+			username,
+			password,
+		});
+	} catch (error: unknown) {
+		throw createApiRequestError(error, UI_MESSAGES.LOGIN_FAILED);
+	}
 }
 
 export async function getProfile(token: string): Promise<User> {
