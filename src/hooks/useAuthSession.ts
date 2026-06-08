@@ -53,6 +53,8 @@ export function useAuthSession(): UseAuthSessionResult {
 
 			if (!storedToken) {
 				setAuthState((currentState) => ({
+					// @note
+					// 現在のauthStateを保持しつつ、isInitializingのみをfalseに更新するための記法
 					...currentState,
 					isInitializing: false,
 				}));

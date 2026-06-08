@@ -17,9 +17,9 @@ export type LoginResponse = {
 export type AuthMode = 'login' | 'register';
 
 export type AuthState = {
-	user: User | null;
-	token: string | null;
-	isInitializing: boolean;
-	isSubmitting: boolean;
-	errorMessage: string | null;
+	user: User | null;						// ログインユーザーの情報（ログインしていない場合はnull）
+	token: string | null;					// 認証トークン（ログインしていない場合はnull）
+	isInitializing: boolean;			// 初期化中かどうか
+	isSubmitting: boolean;				// フォーム送信中かどうか
+	errorMessage: string | null;	// エラーメッセージ（エラーがない場合はnull）
 };

@@ -8,6 +8,13 @@ type AuthenticatedLayoutProps = PropsWithChildren<{
 	user: User;
 	onLogout: () => void;
 }>;
+// @note PropsWithChildren
+// 実質的には以下と同じ:
+// type AuthenticatedLayoutProps = {
+// 	user: User;
+// 	onLogout: () => void;
+// 	children?: React.ReactNode;		// 子コンポーネント、?は必須ではないことを示す
+// };
 
 export default function AuthenticatedLayout({
 	children,
