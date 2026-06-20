@@ -1,9 +1,19 @@
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
 import AuthenticatedLayout from './src/components/layout/AuthenticatedLayout';
-import { Alert } from 'react-native';
 import LoadingScreen from './src/components/layout/LoadingScreen';
 import { useAuthSession } from './src/hooks/useAuthSession';
 import AuthScreen from './src/screens/AuthScreen';
 import MapScreen from './src/screens/MapScreen';
+import UserInfoScreen from './src/screens/UserInfoScreen';
+
+type RootStackParamList = {
+	Map: undefined;
+	UserInfo: undefined;
+};
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
 	const {
@@ -15,7 +25,6 @@ export default function App() {
 		handleLogin,
 		handleLogout,
 		handleRegister,
-		handleUserScreen,
 		setEmail,
 		setPassword,
 		setUsername,
@@ -45,13 +54,25 @@ export default function App() {
 		);
 	}
 
+	const user = authState.user;
+
 	return (
-		<AuthenticatedLayout
-			user={authState.user}
-			onLogout={() => void handleLogout()}
-			onUserScreen={() => void handleUserScreen()}
-		>
-			<MapScreen />
-		</AuthenticatedLayout>
+		<NavigationContainer>
+			<Stack.Navigator>
+				<Stack.Screen name="Map" options={{ headerShown: false }}>
+					{({ navigation }) => (
+						<AuthenticatedLayout
+							user={user}
+							onUserScreen={() => navigation.navigate('UserInfo')}
+						>
+							<MapScreen />
+						</AuthenticatedLayout>
+					)}
+				</Stack.Screen>
+				<Stack.Screen name="UserInfo" options={{ title: 'ユーザー情報' }}>
+					{() => <UserInfoScreen onLogout={handleLogout} />}
+				</Stack.Screen>
+			</Stack.Navigator>
+		</NavigationContainer>
 	);
 }

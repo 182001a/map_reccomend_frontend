@@ -15,6 +15,7 @@ const USERNAME_MAX_LENGTH = 20;
 const PASSWORD_MIN_LENGTH = 8;
 const PASSWORD_MAX_LENGTH = 64;
 
+// フックの戻り値の型定義
 type UseAuthSessionResult = {
 	authMode: AuthMode;
 	authState: AuthState;
@@ -24,7 +25,6 @@ type UseAuthSessionResult = {
 	handleLogin: () => Promise<void>;
 	handleLogout: () => Promise<void>;
 	handleRegister: () => Promise<void>;
-	handleUserScreen: () => void;
 	setEmail: (value: string) => void;
 	setPassword: (value: string) => void;
 	setUsername: (value: string) => void;
@@ -48,8 +48,10 @@ export function useAuthSession(): UseAuthSessionResult {
 		void restoreSession();
 	}, []);
 
+	// セッションの復元処理
 	async function restoreSession(): Promise<void> {
 		try {
+			// SecureStore(端末)から保存されたトークンを取得
 			const storedToken = await SecureStore.getItemAsync(AUTH_TOKEN_STORAGE_KEY);
 
 			if (!storedToken) {
@@ -71,9 +73,10 @@ export function useAuthSession(): UseAuthSessionResult {
 				errorMessage: null,
 			});
 		} catch (error) {
-			const isInvalidToken =
-				error instanceof ApiRequestError &&
-				(error.status === 401 || error.status === 403);
+			const isInvalidToken: boolean =
+				error instanceof ApiRequestError
+				&& (error.status === 401 || error.status === 403)
+			;
 
 			if (isInvalidToken) {
 				await SecureStore.deleteItemAsync(AUTH_TOKEN_STORAGE_KEY);
@@ -91,6 +94,7 @@ export function useAuthSession(): UseAuthSessionResult {
 		}
 	}
 
+	// 認証フォームのバリデーション
 	function validateAuthForm(currentMode: AuthMode): string | null {
 		const trimmedUsername = username.trim();
 		const trimmedEmail = email.trim();
@@ -131,11 +135,13 @@ export function useAuthSession(): UseAuthSessionResult {
 		return null;
 	}
 
+	// ログイン処理
 	async function handleLogin(): Promise<void> {
 		const trimmedUsername = username.trim();
 		const validationError = validateAuthForm('login');
 
 		if (validationError) {
+			// 認証エラーの場合、authStateのerrorMessageを更新して処理を終了
 			setAuthState((currentState) => ({
 				...currentState,
 				errorMessage: validationError,
@@ -144,12 +150,13 @@ export function useAuthSession(): UseAuthSessionResult {
 		}
 
 		try {
+			// 認証中の状態に更新
 			setAuthState((currentState) => ({
 				...currentState,
 				isSubmitting: true,
 				errorMessage: null,
 			}));
-
+			// ログイン処理を実行
 			const response = await login(trimmedUsername, password);
 			await SecureStore.setItemAsync(AUTH_TOKEN_STORAGE_KEY, response.token);
 			setAuthState({
@@ -161,6 +168,7 @@ export function useAuthSession(): UseAuthSessionResult {
 			});
 			setPassword('');
 		} catch (error) {
+			// ログインエラー処理
 			setAuthState((currentState) => ({
 				...currentState,
 				isSubmitting: false,
@@ -170,6 +178,7 @@ export function useAuthSession(): UseAuthSessionResult {
 		}
 	}
 
+	// 登録処理
 	async function handleRegister(): Promise<void> {
 		const trimmedUsername = username.trim();
 		const trimmedEmail = email.trim();
@@ -211,6 +220,7 @@ export function useAuthSession(): UseAuthSessionResult {
 		}
 	}
 
+	// ログアウト処理
 	async function handleLogout(): Promise<void> {
 		await SecureStore.deleteItemAsync(AUTH_TOKEN_STORAGE_KEY);
 		setAuthState({
@@ -226,10 +236,7 @@ export function useAuthSession(): UseAuthSessionResult {
 		Alert.alert(UI_MESSAGES.LOGOUT_SUCCESS);
 	}
 
-	function handleUserScreen(): void {
-		Alert.alert('ユーザー画面は未実装です');
-	}
-
+	// 認証モードの切り替え処理(ログイン/登録)
 	function switchAuthMode(nextMode: AuthMode): void {
 		setAuthMode(nextMode);
 		setEmail('');
@@ -250,7 +257,6 @@ export function useAuthSession(): UseAuthSessionResult {
 		handleLogin,
 		handleLogout,
 		handleRegister,
-		handleUserScreen,
 		setEmail,
 		setPassword,
 		setUsername,

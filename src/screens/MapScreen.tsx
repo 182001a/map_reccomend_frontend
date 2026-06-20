@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, View, Text } from 'react-native';
 import { useEffect, useRef, useState } from 'react';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
@@ -131,15 +132,7 @@ export default function MapScreen() {
 				{isLocatingCurrentPosition ? (
 					<ActivityIndicator color="#1f6feb" />
 				) : (
-					// 現在地アイコン（中心の点と4方向の線を組み合わせたデザイン）
-					<View style={styles.currentLocationIcon}>
-						<View style={styles.currentLocationRing} />
-						<View style={styles.currentLocationDot} />
-						<View style={[styles.currentLocationLine, styles.currentLocationLineTop]} />
-						<View style={[styles.currentLocationLine, styles.currentLocationLineRight]} />
-						<View style={[styles.currentLocationLine, styles.currentLocationLineBottom]} />
-						<View style={[styles.currentLocationLine, styles.currentLocationLineLeft]} />
-					</View>
+					<Ionicons name="locate" size={30} color="#0f1f3a" />
 				)}
 			</Pressable>
 		</View>
@@ -173,52 +166,6 @@ const styles = StyleSheet.create({
 	},
 	currentLocationButtonDisabled: {
 		opacity: 0.8,
-	},
-	currentLocationDot: {
-		position: 'absolute',
-		width: 5,
-		height: 5,
-		borderRadius: 2.5,
-		backgroundColor: '#0f1f3a',
-	},
-	currentLocationIcon: {
-		width: 32,
-		height: 32,
-		alignItems: 'center',
-		justifyContent: 'center',
-	},
-	currentLocationLine: {
-		position: 'absolute',
-		backgroundColor: '#0f1f3a',
-		borderRadius: 1.5,
-	},
-	currentLocationLineBottom: {
-		width: 3,
-		height: 8,
-		bottom: 0,
-	},
-	currentLocationLineLeft: {
-		width: 8,
-		height: 3,
-		left: 0,
-	},
-	currentLocationLineRight: {
-		width: 8,
-		height: 3,
-		right: 0,
-	},
-	currentLocationLineTop: {
-		width: 3,
-		height: 8,
-		top: 0,
-	},
-	currentLocationRing: {
-		position: 'absolute',
-		width: 20,
-		height: 20,
-		borderRadius: 10,
-		borderWidth: 3,
-		borderColor: '#0f1f3a',
 	},
 	map: {
 		flex: 1,
