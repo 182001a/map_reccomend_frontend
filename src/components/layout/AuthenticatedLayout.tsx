@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { PropsWithChildren } from 'react';
 
@@ -7,6 +8,7 @@ import type { User } from '../../types/auth';
 type AuthenticatedLayoutProps = PropsWithChildren<{
 	user: User;
 	onLogout: () => void;
+	onUserScreen?: () => void;
 }>;
 // @note PropsWithChildren
 // 実質的には以下と同じ:
@@ -20,14 +22,18 @@ export default function AuthenticatedLayout({
 	children,
 	user,
 	onLogout,
+	onUserScreen,
 }: AuthenticatedLayoutProps) {
 	return (
 		<View style={styles.appContainer}>
 			<View style={styles.header}>
-				<View>
-					<Text style={styles.welcomeText}>{user.username}</Text>
-					<Text style={styles.subText}>{user.email}</Text>
-				</View>
+				<Pressable
+					onPress={onUserScreen}
+					style={styles.userIconButton}
+					accessibilityLabel="ユーザー画面を開く"
+				>
+					<Ionicons name="person" size={24} color="#1f4aa8" />
+				</Pressable>
 				<Pressable onPress={onLogout} style={styles.secondaryButton}>
 					<Text style={styles.secondaryButtonText}>{UI_MESSAGES.LOGOUT}</Text>
 				</Pressable>
@@ -66,14 +72,12 @@ const styles = StyleSheet.create({
 		color: '#1f4aa8',
 		fontWeight: '600',
 	},
-	subText: {
-		fontSize: 13,
-		color: '#5b6473',
-		marginTop: 2,
-	},
-	welcomeText: {
-		fontSize: 18,
-		fontWeight: '700',
-		color: '#14213d',
+	userIconButton: {
+		width: 42,
+		height: 42,
+		borderRadius: 21,
+		backgroundColor: '#eef4ff',
+		alignItems: 'center',
+		justifyContent: 'center',
 	},
 });

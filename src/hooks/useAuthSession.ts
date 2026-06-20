@@ -24,6 +24,7 @@ type UseAuthSessionResult = {
 	handleLogin: () => Promise<void>;
 	handleLogout: () => Promise<void>;
 	handleRegister: () => Promise<void>;
+	handleUserScreen: () => void;
 	setEmail: (value: string) => void;
 	setPassword: (value: string) => void;
 	setUsername: (value: string) => void;
@@ -225,6 +226,10 @@ export function useAuthSession(): UseAuthSessionResult {
 		Alert.alert(UI_MESSAGES.LOGOUT_SUCCESS);
 	}
 
+	function handleUserScreen(): void {
+		Alert.alert('ユーザー画面は未実装です');
+	}
+
 	function switchAuthMode(nextMode: AuthMode): void {
 		setAuthMode(nextMode);
 		setEmail('');
@@ -245,6 +250,7 @@ export function useAuthSession(): UseAuthSessionResult {
 		handleLogin,
 		handleLogout,
 		handleRegister,
+		handleUserScreen,
 		setEmail,
 		setPassword,
 		setUsername,

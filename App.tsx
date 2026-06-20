@@ -1,4 +1,5 @@
 import AuthenticatedLayout from './src/components/layout/AuthenticatedLayout';
+import { Alert } from 'react-native';
 import LoadingScreen from './src/components/layout/LoadingScreen';
 import { useAuthSession } from './src/hooks/useAuthSession';
 import AuthScreen from './src/screens/AuthScreen';
@@ -14,6 +15,7 @@ export default function App() {
 		handleLogin,
 		handleLogout,
 		handleRegister,
+		handleUserScreen,
 		setEmail,
 		setPassword,
 		setUsername,
@@ -47,6 +49,7 @@ export default function App() {
 		<AuthenticatedLayout
 			user={authState.user}
 			onLogout={() => void handleLogout()}
+			onUserScreen={() => void handleUserScreen()}
 		>
 			<MapScreen />
 		</AuthenticatedLayout>
