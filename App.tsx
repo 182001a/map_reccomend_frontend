@@ -70,7 +70,12 @@ export default function App() {
 					)}
 				</Stack.Screen>
 				<Stack.Screen name="UserInfo" options={{ title: 'ユーザー情報' }}>
-					{() => <UserInfoScreen onLogout={handleLogout} />}
+					{() => (
+						<UserInfoScreen
+							onLogout={handleLogout}
+							user={user}
+						/>
+					)}
 				</Stack.Screen>
 			</Stack.Navigator>
 		</NavigationContainer>
