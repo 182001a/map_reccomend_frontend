@@ -9,6 +9,7 @@ export const UI_MESSAGES = {
   LOGIN: 'ログイン',
   REGISTER: '新規登録',
   LOGOUT: 'ログアウト',
+  EDIT: '編集',
   LOGIN_SUCCESS: 'ログインしました',
   REGISTER_SUCCESS: '登録が完了しました',
   LOGOUT_SUCCESS: 'ログアウトしました',

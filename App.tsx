@@ -25,6 +25,7 @@ export default function App() {
 		handleLogin,
 		handleLogout,
 		handleRegister,
+		handleEdit,
 		setEmail,
 		setPassword,
 		setUsername,
@@ -73,6 +74,7 @@ export default function App() {
 					{() => (
 						<UserInfoScreen
 							onLogout={handleLogout}
+							onEdit={handleEdit}
 							user={user}
 						/>
 					)}

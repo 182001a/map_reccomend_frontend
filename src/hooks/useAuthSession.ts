@@ -25,6 +25,7 @@ type UseAuthSessionResult = {
 	handleLogin: () => Promise<void>;
 	handleLogout: () => Promise<void>;
 	handleRegister: () => Promise<void>;
+	handleEdit: () => Promise<void>;
 	setEmail: (value: string) => void;
 	setPassword: (value: string) => void;
 	setUsername: (value: string) => void;
@@ -236,6 +237,13 @@ export function useAuthSession(): UseAuthSessionResult {
 		Alert.alert(UI_MESSAGES.LOGOUT_SUCCESS);
 	}
 
+	// ユーザー情報編集処理
+	async function handleEdit(): Promise<void> {
+		// 編集処理の実装はここに追加する
+		// 例: ユーザー情報を更新するAPIを呼び出すなど
+		Alert.alert('ユーザー情報の編集処理が呼び出されました');
+	}
+
 	// 認証モードの切り替え処理(ログイン/登録)
 	function switchAuthMode(nextMode: AuthMode): void {
 		setAuthMode(nextMode);
@@ -257,6 +265,7 @@ export function useAuthSession(): UseAuthSessionResult {
 		handleLogin,
 		handleLogout,
 		handleRegister,
+		handleEdit,
 		setEmail,
 		setPassword,
 		setUsername,
