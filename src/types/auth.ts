@@ -21,6 +21,12 @@ export type LoginResponse = {
 	token: string;
 };
 
+// ユーザー更新情報
+export type UserUpdateInput = {
+	username: string;
+	email: string;
+};
+
 // 登録情報
 export type AuthMode = 'login' | 'register';
 

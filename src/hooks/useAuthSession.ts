@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 
-import { getProfile, login, register } from '../dao/auth';
+import { getProfile, login, register, updateProfile } from '../dao/auth';
 import { ApiRequestError } from '../dao/errors';
 import { UI_MESSAGES } from '../constants/locationMessages';
-import type { AuthMode, AuthState } from '../types/auth';
+import type { AuthMode, AuthState, UserUpdateInput } from '../types/auth';
 
 const AUTH_TOKEN_STORAGE_KEY = 'auth_token';
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -25,7 +25,7 @@ type UseAuthSessionResult = {
 	handleLogin: () => Promise<void>;
 	handleLogout: () => Promise<void>;
 	handleRegister: () => Promise<void>;
-	handleEdit: () => Promise<void>;
+	handleEdit: (input: UserUpdateInput) => Promise<boolean>;
 	setEmail: (value: string) => void;
 	setPassword: (value: string) => void;
 	setUsername: (value: string) => void;
@@ -136,6 +136,33 @@ export function useAuthSession(): UseAuthSessionResult {
 		return null;
 	}
 
+	// プロフィール編集フォームのバリデーション
+	function validateProfileForm(input: UserUpdateInput): string | null {
+		const trimmedUsername = input.username.trim();
+		const trimmedEmail = input.email.trim();
+
+		if (!trimmedUsername || !trimmedEmail) {
+			return UI_MESSAGES.EMPTY_PROFILE_FIELDS;
+		}
+
+		if (
+			trimmedUsername.length < USERNAME_MIN_LENGTH ||
+			trimmedUsername.length > USERNAME_MAX_LENGTH
+		) {
+			return UI_MESSAGES.INVALID_USERNAME_LENGTH;
+		}
+
+		if (!USERNAME_REGEX.test(trimmedUsername)) {
+			return UI_MESSAGES.INVALID_USERNAME_FORMAT;
+		}
+
+		if (!EMAIL_REGEX.test(trimmedEmail)) {
+			return UI_MESSAGES.INVALID_EMAIL;
+		}
+
+		return null;
+	}
+
 	// ログイン処理
 	async function handleLogin(): Promise<void> {
 		const trimmedUsername = username.trim();
@@ -238,10 +265,54 @@ export function useAuthSession(): UseAuthSessionResult {
 	}
 
 	// ユーザー情報編集処理
-	async function handleEdit(): Promise<void> {
-		// 編集処理の実装はここに追加する
-		// 例: ユーザー情報を更新するAPIを呼び出すなど
-		Alert.alert('ユーザー情報の編集処理が呼び出されました');
+	async function handleEdit(input: UserUpdateInput): Promise<boolean> {
+		const trimmedInput: UserUpdateInput = {
+			username: input.username.trim(),
+			email: input.email.trim(),
+		};
+		const validationError = validateProfileForm(trimmedInput);
+
+		if (validationError) {
+			setAuthState((currentState) => ({
+				...currentState,
+				errorMessage: validationError,
+			}));
+			return false;
+		}
+
+		if (!authState.token) {
+			setAuthState((currentState) => ({
+				...currentState,
+				errorMessage: UI_MESSAGES.MAP_AUTH_REQUIRED,
+			}));
+			return false;
+		}
+
+		try {
+			setAuthState((currentState) => ({
+				...currentState,
+				isSubmitting: true,
+				errorMessage: null,
+			}));
+
+			const updatedUser = await updateProfile(authState.token, trimmedInput);
+			setAuthState((currentState) => ({
+				...currentState,
+				user: updatedUser,
+				isSubmitting: false,
+				errorMessage: null,
+			}));
+			Alert.alert(UI_MESSAGES.PROFILE_UPDATE_SUCCESS);
+			return true;
+		} catch (error) {
+			setAuthState((currentState) => ({
+				...currentState,
+				isSubmitting: false,
+				errorMessage:
+					error instanceof Error ? error.message : UI_MESSAGES.PROFILE_UPDATE_FAILED,
+			}));
+			return false;
+		}
 	}
 
 	// 認証モードの切り替え処理(ログイン/登録)

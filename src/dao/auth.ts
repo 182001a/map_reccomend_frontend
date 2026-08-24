@@ -1,7 +1,12 @@
 import { apiClient } from './client';
 import { createApiRequestError } from './errors';
 import { UI_MESSAGES } from '../constants/locationMessages';
-import type { LoginCredentials, LoginResponse, User } from '../types/auth';
+import type {
+	LoginCredentials,
+	LoginResponse,
+	User,
+	UserUpdateInput,
+} from '../types/auth';
 
 // エンドポイントの定義
 const AUTH_ENDPOINTS = {
@@ -77,5 +82,26 @@ export async function getProfile(token: string): Promise<User> {
 		return response.data;
 	} catch (error: unknown) {
 		throw createApiRequestError(error, UI_MESSAGES.PROFILE_FETCH_FAILED);
+	}
+}
+
+export async function updateProfile(
+	token: string,
+	input: UserUpdateInput
+): Promise<User> {
+	try {
+		const response = await apiClient.patch<User>(
+			AUTH_ENDPOINTS.profile,
+			input,
+			{
+				headers: {
+					...createTokenHeaders(token),
+				},
+			}
+		);
+
+		return response.data;
+	} catch (error: unknown) {
+		throw createApiRequestError(error, UI_MESSAGES.PROFILE_UPDATE_FAILED);
 	}
 }

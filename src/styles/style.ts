@@ -226,9 +226,34 @@ export const userInfoScreenStyles = StyleSheet.create({
 		fontSize: 30,
 		fontWeight: '700',
 	},
+	buttonDisabled: {
+		opacity: 0.7,
+	},
+	buttonRow: {
+		flexDirection: 'row',
+		gap: 12,
+	},
+	buttonRowItem: {
+		flex: 1,
+	},
+	cancelButton: {
+		...buttonBase,
+		backgroundColor: colors.white,
+		borderWidth: 1,
+		borderColor: colors.border,
+	},
+	cancelButtonText: {
+		color: colors.textSubtle,
+		fontSize: 16,
+		fontWeight: '700',
+	},
 	content: {
 		padding: 24,
 		gap: 24,
+	},
+	errorText: {
+		color: colors.danger,
+		fontSize: 14,
 	},
 	fieldGroup: {
 		gap: 8,
@@ -248,6 +273,15 @@ export const userInfoScreenStyles = StyleSheet.create({
 		color: colors.primaryDark,
 		fontSize: 16,
 		fontWeight: '700',
+	},
+	input: {
+		borderWidth: 1,
+		borderColor: colors.border,
+		borderRadius: radii.button,
+		paddingHorizontal: 14,
+		paddingVertical: 12,
+		fontSize: 16,
+		backgroundColor: '#f9fbfd',
 	},
 	logoutButton: {
 		...buttonBase,

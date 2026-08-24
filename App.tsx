@@ -75,6 +75,8 @@ export default function App() {
 						<UserInfoScreen
 							onLogout={handleLogout}
 							onEdit={handleEdit}
+							errorMessage={authState.errorMessage}
+							isSubmitting={authState.isSubmitting}
 							user={user}
 						/>
 					)}
