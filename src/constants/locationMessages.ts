@@ -23,7 +23,7 @@ export const UI_MESSAGES = {
 
   EMPTY_CREDENTIALS: 'ユーザー名とパスワードを入力してください',
   EMPTY_REGISTRATION_FIELDS: 'ユーザー名、メールアドレス、パスワードを入力してください',
-  EMPTY_PROFILE_FIELDS: 'ユーザー名とメールアドレスを入力してください',
+  EMPTY_PROFILE_FIELDS: 'ユーザー名を入力してください',
   RESTORE_FAILED: '保存されたログイン情報を復元できませんでした',
   PROFILE_FETCH_FAILED: 'プロフィールの取得に失敗しました',
   MAP_AUTH_REQUIRED: '地図機能を使うには認証が必要です',

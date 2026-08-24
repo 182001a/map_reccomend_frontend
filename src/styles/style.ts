@@ -251,6 +251,9 @@ export const userInfoScreenStyles = StyleSheet.create({
 		padding: 24,
 		gap: 24,
 	},
+	editingContent: {
+		paddingBottom: 120,
+	},
 	errorText: {
 		color: colors.danger,
 		fontSize: 14,
@@ -282,6 +285,9 @@ export const userInfoScreenStyles = StyleSheet.create({
 		paddingVertical: 12,
 		fontSize: 16,
 		backgroundColor: '#f9fbfd',
+	},
+	keyboardAvoidingContainer: {
+		flex: 1,
 	},
 	logoutButton: {
 		...buttonBase,

@@ -24,7 +24,7 @@ export type LoginResponse = {
 // ユーザー更新情報
 export type UserUpdateInput = {
 	username: string;
-	email: string;
+	password?: string;
 };
 
 // 登録情報

@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
 	ActivityIndicator,
+	KeyboardAvoidingView,
+	Platform,
 	Pressable,
 	ScrollView,
 	Text,
@@ -12,6 +14,7 @@ import { UI_MESSAGES } from '../constants/locationMessages';
 import { userInfoScreenStyles as styles } from '../styles/style';
 import type { User, UserUpdateInput } from '../types/auth';
 
+const PASSWORD_INPUT_SCROLL_Y = 160;
 
 type UserInfoScreenProps = {
 	onLogout: () => Promise<void>;	// ログアウトボタンを押したときに実行する処理
@@ -29,22 +32,23 @@ export default function UserInfoScreen({
 	isSubmitting,
 	user,
 }: UserInfoScreenProps) {
+	const scrollViewRef = useRef<ScrollView | null>(null);
 	const [isEditing, setIsEditing] = useState(false);
 	const [editingUsername, setEditingUsername] = useState(user.username);
-	const [editingEmail, setEditingEmail] = useState(user.email);
+	const [editingPassword, setEditingPassword] = useState('');
 	const [hasSubmittedEdit, setHasSubmittedEdit] = useState(false);
 	const profileInitial = user.username.slice(0, 1).toUpperCase();	// アバターに表示するユーザー名の頭文字
 
 	useEffect(() => {
 		if (!isEditing) {
 			setEditingUsername(user.username);
-			setEditingEmail(user.email);
+			setEditingPassword('');
 		}
-	}, [isEditing, user.email, user.username]);
+	}, [isEditing, user.username]);
 
 	function cancelEdit(): void {
 		setEditingUsername(user.username);
-		setEditingEmail(user.email);
+		setEditingPassword('');
 		setHasSubmittedEdit(false);
 		setIsEditing(false);
 	}
@@ -53,119 +57,150 @@ export default function UserInfoScreen({
 		setHasSubmittedEdit(true);
 		const isSaved = await onEdit({
 			username: editingUsername,
-			email: editingEmail,
+			...(editingPassword ? { password: editingPassword } : {}),
 		});
 
 		if (isSaved) {
+			setEditingPassword('');
 			setHasSubmittedEdit(false);
 			setIsEditing(false);
 		}
 	}
 
+	function scrollToPasswordInput(): void {
+		setTimeout(() => {
+			scrollViewRef.current?.scrollTo({
+				y: PASSWORD_INPUT_SCROLL_Y,
+				animated: true,
+			});
+		}, 120);
+	}
+
 	return (
-		<ScrollView contentContainerStyle={styles.content} style={styles.screen}>
-			<View style={styles.profileHeader}>
-				<View style={styles.avatar}>
-					<Text style={styles.avatarText}>{profileInitial}</Text>
-				</View>
-				<Text style={styles.title}>プロフィール</Text>
-				<Text style={styles.subtitle}>アカウント情報の確認</Text>
-			</View>
-			<View style={styles.section}>
-				<Text style={styles.sectionTitle}>ユーザー情報</Text>
-				{isEditing ? (
-					<>
-						<View style={styles.fieldGroup}>
-							<Text style={styles.label}>ユーザー名</Text>
-							<TextInput
-								autoCapitalize="none"
-								autoCorrect={false}
-								editable={!isSubmitting}
-								onChangeText={setEditingUsername}
-								style={styles.input}
-								value={editingUsername}
-							/>
-						</View>
-						<View style={styles.fieldGroup}>
-							<Text style={styles.label}>メールアドレス</Text>
-							<TextInput
-								autoCapitalize="none"
-								autoCorrect={false}
-								// editable={!isSubmitting}
-								editable={false} // メールアドレスは編集不可にする
-								keyboardType="email-address"
-								onChangeText={setEditingEmail}
-								style={styles.input}
-								value={editingEmail}
-							/>
-						</View>
-						{hasSubmittedEdit && errorMessage ? (
-							<Text style={styles.errorText}>{errorMessage}</Text>
-						) : null}
-					</>
-				) : (
-					<>
-						<View style={styles.fieldGroup}>
-							<Text style={styles.label}>ユーザー名</Text>
-							<Text style={styles.value}>{user.username}</Text>
-						</View>
-						<View style={styles.fieldGroup}>
-							<Text style={styles.label}>メールアドレス</Text>
-							<Text style={styles.value}>{user.email}</Text>
-						</View>
-					</>
-				)}
-			</View>
-			{isEditing ? (
-				<View style={styles.buttonRow}>
-					<Pressable
-						disabled={isSubmitting}
-						onPress={cancelEdit}
-						style={[
-							styles.cancelButton,
-							styles.buttonRowItem,
-						]}
-					>
-						<Text style={styles.cancelButtonText}>{UI_MESSAGES.CANCEL}</Text>
-					</Pressable>
-					<Pressable
-						disabled={isSubmitting}
-						onPress={() => void saveEdit()}
-						style={[
-							styles.editButton,
-							styles.buttonRowItem,
-							isSubmitting && styles.buttonDisabled,
-						]}
-					>
-						{isSubmitting ? (
-							<ActivityIndicator color="#ffffff" />
-						) : (
-							<Text style={styles.editButtonText}>{UI_MESSAGES.SAVE}</Text>
-						)}
-					</Pressable>
-				</View>
-			) : (
-				<Pressable
-					onPress={() => {
-						setHasSubmittedEdit(false);
-						setIsEditing(true);
-					}}
-					style={styles.editButton}
-				>
-					<Text style={styles.editButtonText}>{UI_MESSAGES.EDIT}</Text>
-				</Pressable>
-			)}
-			{/* ログアウトボタン */}
-			<Pressable
-				disabled={isSubmitting}
-				onPress={() => void onLogout()}
-				style={[
-					styles.logoutButton,
-					isSubmitting && styles.buttonDisabled,
+		<KeyboardAvoidingView
+			behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+			keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
+			style={styles.keyboardAvoidingContainer}
+		>
+			<ScrollView
+				automaticallyAdjustKeyboardInsets
+				contentContainerStyle={[
+					styles.content,
+					isEditing && styles.editingContent,
 				]}
+				keyboardDismissMode="interactive"
+				keyboardShouldPersistTaps="handled"
+				ref={scrollViewRef}
+				style={styles.screen}
 			>
-				<Text style={styles.logoutButtonText}>{UI_MESSAGES.LOGOUT}</Text>
-			</Pressable>
-		</ScrollView>
+				<View style={styles.profileHeader}>
+					<View style={styles.avatar}>
+						<Text style={styles.avatarText}>{profileInitial}</Text>
+					</View>
+					<Text style={styles.title}>プロフィール</Text>
+					<Text style={styles.subtitle}>アカウント情報の確認</Text>
+				</View>
+				<View style={styles.section}>
+					<Text style={styles.sectionTitle}>ユーザー情報</Text>
+					{isEditing ? (
+						<>
+							<View style={styles.fieldGroup}>
+								<Text style={styles.label}>ユーザー名</Text>
+								<TextInput
+									autoCapitalize="none"
+									autoCorrect={false}
+									editable={!isSubmitting}
+									onChangeText={setEditingUsername}
+									style={styles.input}
+									value={editingUsername}
+								/>
+							</View>
+							<View style={styles.fieldGroup}>
+								<Text style={styles.label}>メールアドレス</Text>
+								<Text style={styles.value}>{user.email}</Text>
+							</View>
+							<View style={styles.fieldGroup}>
+								<Text style={styles.label}>パスワード</Text>
+								<TextInput
+									autoCapitalize="none"
+									autoCorrect={false}
+									editable={!isSubmitting}
+									onChangeText={setEditingPassword}
+									onFocus={scrollToPasswordInput}
+									placeholder="変更する場合のみ入力"
+									secureTextEntry
+									style={styles.input}
+									value={editingPassword}
+								/>
+							</View>
+							{hasSubmittedEdit && errorMessage ? (
+								<Text style={styles.errorText}>{errorMessage}</Text>
+							) : null}
+						</>
+					) : (
+						<>
+							<View style={styles.fieldGroup}>
+								<Text style={styles.label}>ユーザー名</Text>
+								<Text style={styles.value}>{user.username}</Text>
+							</View>
+							<View style={styles.fieldGroup}>
+								<Text style={styles.label}>メールアドレス</Text>
+								<Text style={styles.value}>{user.email}</Text>
+							</View>
+						</>
+					)}
+				</View>
+				{isEditing ? (
+					<View style={styles.buttonRow}>
+						<Pressable
+							disabled={isSubmitting}
+							onPress={cancelEdit}
+							style={[
+								styles.cancelButton,
+								styles.buttonRowItem,
+							]}
+						>
+							<Text style={styles.cancelButtonText}>{UI_MESSAGES.CANCEL}</Text>
+						</Pressable>
+						<Pressable
+							disabled={isSubmitting}
+							onPress={() => void saveEdit()}
+							style={[
+								styles.editButton,
+								styles.buttonRowItem,
+								isSubmitting && styles.buttonDisabled,
+							]}
+						>
+							{isSubmitting ? (
+								<ActivityIndicator color="#ffffff" />
+							) : (
+								<Text style={styles.editButtonText}>{UI_MESSAGES.SAVE}</Text>
+							)}
+						</Pressable>
+					</View>
+				) : (
+					<Pressable
+						onPress={() => {
+							setHasSubmittedEdit(false);
+							setIsEditing(true);
+						}}
+						style={styles.editButton}
+					>
+						<Text style={styles.editButtonText}>{UI_MESSAGES.EDIT}</Text>
+					</Pressable>
+				)}
+				{/* ログアウトボタン */}
+				<Pressable
+					disabled={isSubmitting}
+					onPress={() => void onLogout()}
+					style={[
+						styles.logoutButton,
+						isSubmitting && styles.buttonDisabled,
+					]}
+				>
+					<Text style={styles.logoutButtonText}>{UI_MESSAGES.LOGOUT}</Text>
+				</Pressable>
+			</ScrollView>
+		</KeyboardAvoidingView>
 	);
 }

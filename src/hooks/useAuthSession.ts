@@ -139,9 +139,8 @@ export function useAuthSession(): UseAuthSessionResult {
 	// プロフィール編集フォームのバリデーション
 	function validateProfileForm(input: UserUpdateInput): string | null {
 		const trimmedUsername = input.username.trim();
-		const trimmedEmail = input.email.trim();
 
-		if (!trimmedUsername || !trimmedEmail) {
+		if (!trimmedUsername) {
 			return UI_MESSAGES.EMPTY_PROFILE_FIELDS;
 		}
 
@@ -156,8 +155,12 @@ export function useAuthSession(): UseAuthSessionResult {
 			return UI_MESSAGES.INVALID_USERNAME_FORMAT;
 		}
 
-		if (!EMAIL_REGEX.test(trimmedEmail)) {
-			return UI_MESSAGES.INVALID_EMAIL;
+		if (
+			input.password &&
+			(input.password.length < PASSWORD_MIN_LENGTH ||
+				input.password.length > PASSWORD_MAX_LENGTH)
+		) {
+			return UI_MESSAGES.INVALID_PASSWORD_LENGTH;
 		}
 
 		return null;
@@ -268,8 +271,12 @@ export function useAuthSession(): UseAuthSessionResult {
 	async function handleEdit(input: UserUpdateInput): Promise<boolean> {
 		const trimmedInput: UserUpdateInput = {
 			username: input.username.trim(),
-			email: input.email.trim(),
 		};
+
+		if (input.password) {
+			trimmedInput.password = input.password;
+		}
+
 		const validationError = validateProfileForm(trimmedInput);
 
 		if (validationError) {
