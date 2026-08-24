@@ -1,10 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
-import { ActivityIndicator, Alert, Pressable, StyleSheet, View, Text } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, View, Text } from 'react-native';
 import { useEffect, useRef, useState } from 'react';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import type { Region } from 'react-native-maps';
 
 import { UI_MESSAGES } from '../constants/locationMessages';
+import { mapScreenStyles as styles } from '../styles/style';
 import { getCurrentRegion, getLocationErrorMessage } from '../utils/location';
 
 // 現在地取得の状態管理
@@ -138,39 +139,3 @@ export default function MapScreen() {
 		</View>
 	);
 }
-
-const styles = StyleSheet.create({
-	centerContainer: {
-		flex: 1,
-		justifyContent: 'center',
-		alignItems: 'center',
-	},
-	currentLocationButton: {
-		position: 'absolute',
-		right: 16,
-		bottom: 24,
-		width: 52,
-		height: 52,
-		borderRadius: 26,
-		backgroundColor: '#ffffff',
-		alignItems: 'center',
-		justifyContent: 'center',
-		shadowColor: '#000000',
-		shadowOffset: {
-			width: 0,
-			height: 4,
-		},
-		shadowOpacity: 0.18,
-		shadowRadius: 8,
-		elevation: 6,
-	},
-	currentLocationButtonDisabled: {
-		opacity: 0.8,
-	},
-	map: {
-		flex: 1,
-	},
-	mapWrapper: {
-		flex: 1,
-	},
-});

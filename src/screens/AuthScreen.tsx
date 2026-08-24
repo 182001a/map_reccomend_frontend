@@ -3,13 +3,13 @@ import {
 	KeyboardAvoidingView,
 	Platform,
 	Pressable,
-	StyleSheet,
 	Text,
 	TextInput,
 	View,
 } from 'react-native';
 
 import { UI_MESSAGES } from '../constants/locationMessages';
+import { authScreenStyles as styles } from '../styles/style';
 import type { AuthMode, AuthState } from '../types/auth';
 
 type AuthScreenProps = {
@@ -119,75 +119,3 @@ export default function AuthScreen({
 		</KeyboardAvoidingView>
 	);
 }
-
-const styles = StyleSheet.create({
-	authContainer: {
-		flex: 1,
-		justifyContent: 'center',
-		paddingHorizontal: 24,
-		backgroundColor: '#f3f6fb',
-	},
-	buttonDisabled: {
-		opacity: 0.7,
-	},
-	card: {
-		backgroundColor: '#ffffff',
-		borderRadius: 16,
-		padding: 24,
-		gap: 12,
-		shadowColor: '#000000',
-		shadowOffset: {
-			width: 0,
-			height: 10,
-		},
-		shadowOpacity: 0.08,
-		shadowRadius: 20,
-		elevation: 4,
-	},
-	description: {
-		fontSize: 14,
-		color: '#5b6473',
-		marginBottom: 8,
-	},
-	errorText: {
-		color: '#c53030',
-		fontSize: 14,
-	},
-	input: {
-		borderWidth: 1,
-		borderColor: '#d6dbe4',
-		borderRadius: 12,
-		paddingHorizontal: 14,
-		paddingVertical: 12,
-		fontSize: 16,
-		backgroundColor: '#f9fbfd',
-	},
-	primaryButton: {
-		backgroundColor: '#1f6feb',
-		borderRadius: 12,
-		minHeight: 48,
-		alignItems: 'center',
-		justifyContent: 'center',
-		marginTop: 8,
-	},
-	primaryButtonText: {
-		color: '#ffffff',
-		fontSize: 16,
-		fontWeight: '600',
-	},
-	textButton: {
-		alignItems: 'center',
-		justifyContent: 'center',
-		paddingVertical: 4,
-	},
-	textButtonText: {
-		color: '#1f6feb',
-		fontSize: 14,
-		fontWeight: '600',
-	},
-	title: {
-		fontSize: 24,
-		fontWeight: '700',
-		color: '#14213d',
-	},
-});

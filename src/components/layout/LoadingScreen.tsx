@@ -1,6 +1,7 @@
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
 
 import { UI_MESSAGES } from '../../constants/locationMessages';
+import { loadingScreenStyles as styles } from '../../styles/style';
 
 export default function LoadingScreen() {
 	return (
@@ -10,17 +11,3 @@ export default function LoadingScreen() {
 		</View>
 	);
 }
-
-const styles = StyleSheet.create({
-	centerContainer: {
-		flex: 1,
-		justifyContent: 'center',
-		alignItems: 'center',
-		backgroundColor: '#ffffff',
-	},
-	statusText: {
-		marginTop: 12,
-		fontSize: 14,
-		color: '#5b6473',
-	},
-});

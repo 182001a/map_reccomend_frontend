@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import type { PropsWithChildren } from 'react';
 
+import { authenticatedLayoutStyles as styles } from '../../styles/style';
 import type { User } from '../../types/auth';
 
 type AuthenticatedLayoutProps = PropsWithChildren<{
@@ -40,42 +41,3 @@ export default function AuthenticatedLayout({
 	</View>
 );
 }
-
-const styles = StyleSheet.create({
-	appContainer: {
-		flex: 1,
-		backgroundColor: '#ffffff',
-	},
-	content: {
-		flex: 1,
-	},
-	header: {
-		paddingTop: 56,
-		paddingHorizontal: 16,
-		paddingBottom: 12,
-		backgroundColor: '#ffffff',
-		borderBottomWidth: StyleSheet.hairlineWidth,
-		borderBottomColor: '#d6dbe4',
-		flexDirection: 'row',
-		alignItems: 'center',
-		justifyContent: 'space-between',
-	},
-	secondaryButton: {
-		paddingHorizontal: 14,
-		paddingVertical: 10,
-		borderRadius: 10,
-		backgroundColor: '#eef4ff',
-	},
-	secondaryButtonText: {
-		color: '#1f4aa8',
-		fontWeight: '600',
-	},
-	userIconButton: {
-		width: 42,
-		height: 42,
-		borderRadius: 21,
-		backgroundColor: '#eef4ff',
-		alignItems: 'center',
-		justifyContent: 'center',
-	},
-});

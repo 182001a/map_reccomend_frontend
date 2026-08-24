@@ -1,6 +1,7 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 
 import { UI_MESSAGES } from '../constants/locationMessages';
+import { userInfoScreenStyles as styles } from '../styles/style';
 import type { User } from '../types/auth';
 
 
@@ -55,99 +56,3 @@ export default function UserInfoScreen({
 		</ScrollView>
 	);
 }
-
-const styles = StyleSheet.create({
-	avatar: {
-		width: 72,
-		height: 72,
-		borderRadius: 36,
-		alignItems: 'center',
-		justifyContent: 'center',
-		backgroundColor: '#1f6feb',
-	},
-	avatarText: {
-		color: '#ffffff',
-		fontSize: 30,
-		fontWeight: '700',
-	},
-	content: {
-		padding: 24,
-		gap: 24,
-	},
-	fieldGroup: {
-		gap: 8,
-	},
-	label: {
-		color: '#5b6473',
-		fontSize: 13,
-		fontWeight: '600',
-	},
-	editButton: {
-		minHeight: 48,
-		borderRadius: 12,
-		alignItems: 'center',
-		justifyContent: 'center',
-		backgroundColor: '#eef4ff',
-	},
-	editButtonText: {
-		color: '#1f4aa8',
-		fontSize: 16,
-		fontWeight: '700',
-	},
-	logoutButton: {
-		minHeight: 48,
-		borderRadius: 12,
-		alignItems: 'center',
-		justifyContent: 'center',
-		backgroundColor: '#fff1f1',
-		borderWidth: 1,
-		borderColor: '#ffd0d0',
-	},
-	logoutButtonText: {
-		color: '#c53030',
-		fontSize: 16,
-		fontWeight: '700',
-	},
-	profileHeader: {
-		alignItems: 'center',
-		gap: 8,
-		paddingTop: 16,
-	},
-	screen: {
-		flex: 1,
-		backgroundColor: '#f3f6fb',
-	},
-	section: {
-		gap: 16,
-		padding: 20,
-		borderRadius: 16,
-		backgroundColor: '#ffffff',
-		shadowColor: '#000000',
-		shadowOffset: {
-			width: 0,
-			height: 8,
-		},
-		shadowOpacity: 0.06,
-		shadowRadius: 18,
-		elevation: 3,
-	},
-	sectionTitle: {
-		color: '#14213d',
-		fontSize: 18,
-		fontWeight: '700',
-	},
-	subtitle: {
-		color: '#5b6473',
-		fontSize: 14,
-	},
-	title: {
-		color: '#14213d',
-		fontSize: 26,
-		fontWeight: '700',
-	},
-	value: {
-		color: '#14213d',
-		fontSize: 17,
-		fontWeight: '600',
-	},
-});
